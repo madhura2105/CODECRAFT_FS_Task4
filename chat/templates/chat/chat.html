@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Chat</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f2f2f2;
+            margin: 0;
+            padding: 0;
+        }
+
+        .chat-container {
+            width: 90%;
+            max-width: 600px;
+            margin: 50px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        #status {
+            text-align: center;
+            margin-bottom: 10px;
+            font-weight:bold;
+        }
+
+        #username-input {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        outline: none;
+        }
+
+        #messages {
+            height: 350px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+        }
+
+        .message {
+            background: #eeeeee;
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+
+        .input-area {
+            display: flex;
+            gap: 10px;
+        }
+
+        #message-input {
+        flex: 1;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        outline: none;
+        }
+
+        #send-button {
+        padding: 10px 20px;
+        cursor: pointer;
+        border: none;
+        border-radius: 5px;
+        background: #333;
+        color: white;
+        }
+
+        #send-button:hover {
+        opacity: 0.8;
+        }
+
+    </style>
+</head>
+
+<body>
+
+<div class="chat-container">
+
+    <h1>Real-Time Chat 💬</h1>
+    
+    <P id="status">Connecting...</P>
+
+    <input type="text" id="username-input" placeholder="Enter your username">
+   
+
+    <div id="messages"></div>
+    {% for msg in messages %}
+    <div class="message">
+        {{ msg.username }}: {{ msg.content }}
+    </div>
+    {% endfor %}
+
+    <div class="input-area">
+        <input type="text" id="message-input" placeholder="Type your message...">
+        <button id="send-button">Send</button>
+    </div>
+
+</div>
+
+<script>
+    const messages = document.getElementById("messages");
+    const input = document.getElementById("message-input");
+    const button = document.getElementById("send-button");
+    const status = document.getElementById("status");
+    const usernameInput = document.getElementById("username-input");
+    usernameInput.value = "";
+
+    const roomName = "{{ room.name }}";
+
+const socket = new WebSocket(
+    "ws://" + window.location.host + "/ws/chat/" + roomName + "/"
+);
+
+    socket.onmessage = function(event) {
+        const messageDiv = document.createElement("div");
+        messageDiv.className = "message";
+        messageDiv.textContent = event.data;
+
+        messages.appendChild(messageDiv);
+        messages.scrollTop = messages.scrollHeight;
+    };
+
+    socket.onopen = function() {
+        console.log("WebSocket connected");
+        status.textContent = "Connected ✅";
+    };
+
+    socket.onclose = function() {
+        console.log("WebSocket disconnected");
+        status.textContent = "Disconnected ❌";
+    };
+
+    button.addEventListener("click", function() {
+        const message = input.value.trim();
+        const username = usernameInput.value.trim();
+
+        if (message !== ""&& username!=="") {
+            socket.send(JSON.stringify({
+                username: username,
+                message: message
+            }));
+            input.value = "";
+        }
+    });
+
+    input.addEventListener("keypress", function(event) {
+        if (event.key === "Enter") {
+            button.click();
+        }
+    });
+</script>
+
+</body>
+</html>

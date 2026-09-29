@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Rooms</title>
+</head>
+
+<body>
+
+    <h2>Chat Rooms</h2>
+
+    {% if rooms %}
+        {% for room in rooms %}
+            <p>
+                <a href="{% url 'room_chat' room.name %}">{{ room.name }}</a>
+            </p>
+        {% endfor %}
+    {% else %}
+        <p>No chat rooms available.</p>
+    {% endif %}
+
+</body>
+</html>
